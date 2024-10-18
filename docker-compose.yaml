@@ -1,0 +1,76 @@
+services:
+  build_bear:
+    build:
+      context: create-bear-service
+      dockerfile: Dockerfile
+    depends_on:
+      - broker
+      - db
+    ports:
+      - "3000:3000"
+  bear_heart:
+    build:
+      context: add-heart-service
+      dockerfile: Dockerfile
+    depends_on:
+      - broker
+      - db
+    ports:
+      - "3001:3001"
+  store_bear:
+    build:
+      context: store-bear-service
+      dockerfile: Dockerfile
+    depends_on:
+      - broker
+      - db
+    ports:
+      - "3002:3002"
+  broker:
+    image: apache/kafka:latest
+    container_name: broker
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://localhost:9092,CONTROLLER://localhost:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_NUM_PARTITIONS: 3
+    restart: always
+  db:
+    image: postgres:latest
+    restart: unless-stopped
+    # secrets:
+    #   - db-password
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=bears
+    ports:
+      - "5432:5432"
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    depends_on:
+      - db
+    ports:
+      - "5050:80"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=root
+    restart: unless-stopped
+
+# networks:
+#   public:
+#   private:
+# volumes:
+#   db-data:
+# secrets:
+#   db-password:
+#     file: db/password
