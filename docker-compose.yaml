@@ -8,6 +8,8 @@ services:
       - db
     ports:
       - "3100:3100"
+    environment:
+      - KAFKA_PORT=broker:9092
   bear_heart:
     build:
       context: add-heart-service

@@ -15,9 +15,11 @@ const dbClient = new Client({
     port: 5432
 })
 
+const kafkaPORT = process.env.KAFKA_PORT
+
 const kafka = new Kafka({
     clientId: "build-bear",
-    brokers: ["broker:9092"],
+    brokers: [`${kafkaPORT}`],
     logLevel: logLevel.ERROR
 });
 
