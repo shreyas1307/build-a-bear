@@ -9,7 +9,12 @@ services:
     ports:
       - "3100:3100"
     environment:
-      - KAFKA_PORT=broker:9092
+      KAFKA_PORT: broker:9092
+      DATABASE_USERNAME: admin
+      DATABASE_PASSWORD: root
+      DATABASE_DB: bears
+      DATABASE_HOST: db
+      DATABASE_PORT: 5432
   bear_heart:
     build:
       context: add-heart-service
@@ -19,6 +24,8 @@ services:
       - db
     ports:
       - "3101:3101"
+    environment:
+      KAFKA_PORT: broker:9092
   store_bear:
     build:
       context: store-bear-service
@@ -28,6 +35,13 @@ services:
       - db
     ports:
       - "3102:3102"
+    environment:
+      KAFKA_PORT: broker:9092
+      DATABASE_USERNAME: admin
+      DATABASE_PASSWORD: root
+      DATABASE_DB: bears
+      DATABASE_HOST: db
+      DATABASE_PORT: 5432
   broker:
     image: apache/kafka:latest
     container_name: broker
@@ -53,9 +67,9 @@ services:
     # secrets:
     #   - db-password
     environment:
-      - POSTGRES_USER=admin
-      - POSTGRES_PASSWORD=root
-      - POSTGRES_DB=bears
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: bears
     ports:
       - "5432:5432"
   pgadmin:
@@ -66,8 +80,8 @@ services:
     ports:
       - "5050:80"
     environment:
-      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
-      - PGADMIN_DEFAULT_PASSWORD=root
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: root
     restart: unless-stopped
   prometheus:
     container_name: prometheus

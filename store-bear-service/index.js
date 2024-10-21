@@ -9,11 +9,11 @@ app.use(express.json());
 const PORT = process.env.PORT || 3102;
 
 const dbClient = new Client({
-    user: "admin",
-    password: "root",
-    database: "bears",
-    host: "db",
-    port: 5432
+    user: process.env.DATABASE_USER,
+    password: process.env.DATABASE_PASSWORD,
+    database: process.env.DATABASE_DB,
+    host: process.env.DATABASE,
+    port: process.env.DATABASE_PORT
 })
 
 const testDB = async () => {
@@ -27,9 +27,11 @@ const testDB = async () => {
 
 }
 
+const kafkaPORT = process.env.KAFKA_PORT
+
 const kafka = new Kafka({
     clientId: 'addStoreBear',
-    brokers: ["broker:9092"]
+    brokers: [`${kafkaPORT}`]
 })
 
 const topic = 'bear-hearts'

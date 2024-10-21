@@ -5,9 +5,11 @@ const app = express();
 app.use(express.json());
 const PORT = process.env.PORT || 3101;
 
+const kafkaPORT = process.env.KAFKA_PORT
+
 const kafka = new Kafka({
     clientId: 'addHeartBear',
-    brokers: ["broker:9092"]
+    brokers: [`${kafkaPORT}`]
 })
 
 const topic = 'build-bears'
