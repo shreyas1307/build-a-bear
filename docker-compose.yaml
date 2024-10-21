@@ -6,8 +6,6 @@ services:
     depends_on:
       - broker
       - db
-    networks:
-      - server
     ports:
       - "3100:3100"
   bear_heart:
@@ -17,8 +15,6 @@ services:
     depends_on:
       - broker
       - db
-    networks:
-      - server
     ports:
       - "3101:3101"
   store_bear:
@@ -28,19 +24,13 @@ services:
     depends_on:
       - broker
       - db
-    networks:
-      - server
     ports:
       - "3102:3102"
   broker:
     image: apache/kafka:latest
     container_name: broker
-    networks:
-      - server
     ports:
       - 9092:9092
-    volumes:
-    - kafka-data:/var/lib/kafka/data
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
@@ -60,8 +50,6 @@ services:
     restart: unless-stopped
     # secrets:
     #   - db-password
-    networks:
-      - server
     environment:
       - POSTGRES_USER=admin
       - POSTGRES_PASSWORD=root
@@ -73,8 +61,6 @@ services:
     image: dpage/pgadmin4
     depends_on:
       - db
-    networks:
-      - server
     ports:
       - "5050:80"
     environment:
@@ -84,26 +70,12 @@ services:
   prometheus:
     container_name: prometheus
     image: prom/prometheus
-    networks:
-      - server
     ports:
       - "9090:9090"
     volumes:
       - ./metrics/prometheus.yml:/etc/prometheus/prometheus/yml
-      - prometheus-data:/prometheus
   grafana:
     image: grafana/grafana
-    networks:
-      - server
     container_name: grafana
     ports:
       - "3000:3000"
-    volumes:
-    - grafana-data:/var/lib/grafana
-    
-networks:
-  server:
-volumes:
-  kafka-data:
-  prometheus-data:
-  grafana-data:
