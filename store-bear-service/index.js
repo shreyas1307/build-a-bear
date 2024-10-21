@@ -6,7 +6,7 @@ const { Client } = pg
 
 const app = express();
 app.use(express.json());
-const PORT = process.env.PORT || 3002;
+const PORT = process.env.PORT || 3102;
 
 const dbClient = new Client({
     user: "admin",
@@ -109,5 +109,5 @@ signalTraps.forEach(type => {
 
 
 app.listen(PORT, () => {
-    console.log("Bear heart service running at PORT 3002");
+    console.log("Bear heart service running at PORT 3102");
 })

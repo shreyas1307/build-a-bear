@@ -5,7 +5,7 @@ const {Client} = pg;
 
 const app = express();
 app.use(express.json());
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3100;
 
 const dbClient = new Client({
     user: "admin",
@@ -22,7 +22,36 @@ const kafka = new Kafka({
 });
 
 
-const producer = kafka.producer();
+const testDB = async () => {
+    try {
+        await dbClient.connect();
+        console.log("Client connnected!");
+        await dbClient.end();
+    } catch (error) {
+        console.error("ERROR--->", error)
+    }
+
+}
+
+const testKafka = async () => {
+    try {
+        await producer.connect()
+        console.log('Producer connected')
+        await producer.disconnect();
+    } catch (error) {
+        console.error('ERROR CONNECTING KAFKA --->', error)
+    }
+}
+
+const producer = kafka.producer({allowAutoTopicCreation: true});
+
+app.get('/db', async (req, res) => {
+    await testDB();
+    await testKafka();
+    res.send("DB and KAFKA Connected")
+    
+
+})
 
 app.post("/build-bear", async (req, res) => {
     const { name } = req.body

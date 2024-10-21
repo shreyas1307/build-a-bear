@@ -3,7 +3,7 @@ import {Kafka, logLevel} from 'kafkajs'
 
 const app = express();
 app.use(express.json());
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3101;
 
 const kafka = new Kafka({
     clientId: 'addHeartBear',
@@ -73,5 +73,5 @@ signalTraps.forEach(type => {
 
 
 app.listen(PORT, () => {
-    console.log("Bear heart service running at PORT 3001");
+    console.log("Bear heart service running at PORT 3101");
 })

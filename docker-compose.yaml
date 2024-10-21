@@ -6,8 +6,10 @@ services:
     depends_on:
       - broker
       - db
+    networks:
+      - server
     ports:
-      - "3000:3000"
+      - "3100:3100"
   bear_heart:
     build:
       context: add-heart-service
@@ -15,8 +17,10 @@ services:
     depends_on:
       - broker
       - db
+    networks:
+      - server
     ports:
-      - "3001:3001"
+      - "3101:3101"
   store_bear:
     build:
       context: store-bear-service
@@ -24,30 +28,44 @@ services:
     depends_on:
       - broker
       - db
+    networks:
+      - server
     ports:
-      - "3002:3002"
+      - "3102:3102"
   broker:
     image: apache/kafka:latest
     container_name: broker
-    environment:
-      KAFKA_NODE_ID: 1
-      KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_LISTENERS: PLAINTEXT://localhost:9092,CONTROLLER://localhost:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-      KAFKA_NUM_PARTITIONS: 3
+    networks:
+      - server
+    ports:
+      - 9092:9092
+    volumes:
+    - kafka-data:/var/lib/kafka/data
+    # environment:
+    # - KAFKA_BROKER_ID=1
+    # - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+    # - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+    # - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://broker:29092,PLAINTEXT_HOST://localhost:9092
+    # - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+    # - KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS=0
+    # depends_on:
+    #   - zookeeper
     restart: always
+  # zookeeper:
+  #   image: confluentinc/cp-zookeeper:latest
+  #   container_name: zookeeper
+  #   networks:
+  #     - server
+  #   environment:
+  #     ZOOKEEPER_CLIENT_PORT: 2181
+  #     ZOOKEEPER_TICK_TIME: 2000
   db:
     image: postgres:latest
     restart: unless-stopped
     # secrets:
     #   - db-password
+    networks:
+      - server
     environment:
       - POSTGRES_USER=admin
       - POSTGRES_PASSWORD=root
@@ -59,18 +77,37 @@ services:
     image: dpage/pgadmin4
     depends_on:
       - db
+    networks:
+      - server
     ports:
       - "5050:80"
     environment:
       - PGADMIN_DEFAULT_EMAIL=admin@admin.com
       - PGADMIN_DEFAULT_PASSWORD=root
     restart: unless-stopped
-
-# networks:
-#   public:
-#   private:
-# volumes:
-#   db-data:
-# secrets:
-#   db-password:
-#     file: db/password
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus
+    networks:
+      - server
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./metrics/prometheus.yml:/etc/prometheus/prometheus/yml
+      - prometheus-data:/prometheus
+  grafana:
+    image: grafana/grafana
+    networks:
+      - server
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+    - grafana-data:/var/lib/grafana
+    
+networks:
+  server:
+volumes:
+  kafka-data:
+  prometheus-data:
+  grafana-data:
