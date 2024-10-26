@@ -1,17 +1,22 @@
 import express from "express";
 import { Kafka, logLevel } from "kafkajs";
+import {v4 as uuidv4 } from "uuid"
+import 'dotenv/config'
+import { createClient} from 'redis'
 import pg from 'pg';
-const {Client} = pg;
+const { Client } = pg;
 
 const app = express();
 app.use(express.json());
-const PORT = process.env.PORT || 3100;
+const PORT = process.env.PORT;
+
+const redisClient = createClient({url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`});
 
 const dbClient = new Client({
     user: process.env.DATABASE_USER,
     password: process.env.DATABASE_PASSWORD,
     database: process.env.DATABASE_DB,
-    host: process.env.DATABASE,
+    host: process.env.DATABASE_HOST,
     port: process.env.DATABASE_PORT
 })
 
@@ -22,6 +27,13 @@ const kafka = new Kafka({
     brokers: [`${kafkaPORT}`],
     logLevel: logLevel.ERROR
 });
+
+const testRedis = async () => {
+    await redisClient.connect();
+    if(redisClient.connected) {
+        console.log("REDIS CLIENT CONNECTED" + redisClient.host + " " + redisClient.port);
+    }
+}
 
 
 const testDB = async () => {
@@ -47,13 +59,20 @@ const testKafka = async () => {
 
 const producer = kafka.producer({allowAutoTopicCreation: true});
 
-app.get('/db', async (req, res) => {
-    await testDB();
-    await testKafka();
-    res.send("DB and KAFKA Connected")
+app.get('/health', async (req, res) => {
+    // await testDB();
+    // await testKafka();
+    await testRedis();
+    res.send("DB, Redis and Kafka Connected")
     
 
 })
+
+/**
+ * TODO: Make uuid for bear
+ * JSON Stringify the bear name and id, protocol buffers or use a Kafkajs lib
+ * next services need to destringify and read. and push
+ */
 
 app.post("/build-bear", async (req, res) => {
     const { name } = req.body
@@ -75,6 +94,11 @@ app.post("/build-bear", async (req, res) => {
         res.send("Please send a valid name")
     }
 });
+
+/**
+ * Get bear by the ID
+ * if bear not created, return an appropriate response (it is in progress)
+ * Store the state of this creation somewhere like redis? */ 
 
 app.get('/get-bears', async (req, res) => {
     await dbClient.connect()

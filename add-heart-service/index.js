@@ -1,14 +1,15 @@
 import express from 'express';
 import {Kafka, logLevel} from 'kafkajs'
+import "dotenv/config"
 
 const app = express();
 app.use(express.json());
-const PORT = process.env.PORT || 3101;
+const PORT = process.env.PORT;
 
 const kafkaPORT = process.env.KAFKA_PORT
 
 const kafka = new Kafka({
-    clientId: 'addHeartBear',
+    clientId: 'beart-hearts',
     brokers: [`${kafkaPORT}`]
 })
 
@@ -75,5 +76,5 @@ signalTraps.forEach(type => {
 
 
 app.listen(PORT, () => {
-    console.log("Bear heart service running at PORT 3101");
+    console.log(`Bear heart service running at PORT ${PORT}`);
 })

@@ -1,18 +1,19 @@
 import express from 'express';
 import { Kafka, logLevel } from 'kafkajs'
 import pg from "pg"
+import "dotenv/config"
 
 const { Client } = pg
 
 const app = express();
 app.use(express.json());
-const PORT = process.env.PORT || 3102;
+const PORT = process.env.PORT;
 
 const dbClient = new Client({
     user: process.env.DATABASE_USER,
     password: process.env.DATABASE_PASSWORD,
     database: process.env.DATABASE_DB,
-    host: process.env.DATABASE,
+    host: process.env.DATABASE_HOST,
     port: process.env.DATABASE_PORT
 })
 
@@ -30,7 +31,7 @@ const testDB = async () => {
 const kafkaPORT = process.env.KAFKA_PORT
 
 const kafka = new Kafka({
-    clientId: 'addStoreBear',
+    clientId: 'store-bear',
     brokers: [`${kafkaPORT}`]
 })
 
@@ -111,5 +112,5 @@ signalTraps.forEach(type => {
 
 
 app.listen(PORT, () => {
-    console.log("Bear heart service running at PORT 3102");
+    console.log(`Store bear service running at PORT ${PORT}`);
 })
